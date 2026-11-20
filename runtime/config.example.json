@@ -1,0 +1,14 @@
+{
+  "model_url": "http://127.0.0.1:8081",
+  "name": "小七",
+  "port": 7860,
+  "model": "你的模型.gguf",
+  "city": "上海",
+  "authorized_roots": [],
+  "extract_memories": true,
+  "brief_in_prompt": true,
+  "proactive": true,
+  "proactive_budget": 3,
+  "proactive_min_gap_minutes": 90,
+  "desk_watch": true
+}
