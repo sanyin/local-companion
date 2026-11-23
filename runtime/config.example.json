@@ -13,6 +13,7 @@
   "desk_watch": true,
   "memory_v2": true,
   "memory_prompt_chars": 700,
+  "memory_consolidate": true,
   "agency_ticker": true,
   "agency_mode": "observe",
   "agency_speak_per_week": 3,

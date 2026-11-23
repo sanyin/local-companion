@@ -66,6 +66,7 @@ DEFAULT_CONFIG = {
     "memory_callback_days": 3,
     "memory_v2": True,
     "memory_prompt_chars": 700,
+    "memory_consolidate": True,
     "agency_ticker": True,
     "agency_mode": "observe",
     "agency_speak_per_week": 3,
@@ -229,12 +230,46 @@ def _memory_texts():
         return []
 
 
+_LAST_CONSOLIDATE = {"day": None}
+
+
+def _maybe_consolidate(now):
+    """每天第一次心跳时整理一次记忆：降温、合并重复、归档冷区、报矛盾。
+
+    只降温不删除；合并留 merged_into；矛盾只报告不裁决。全部进 journal。
+    关掉的办法：config 里 "memory_consolidate": false。
+    """
+    if not CONFIG.get("memory_consolidate", True):
+        return None
+    if not isinstance(MEMORIES, memdb.MemDB):
+        return None
+    today = now.date().isoformat()
+    if _LAST_CONSOLIDATE["day"] == today:
+        return None
+    _LAST_CONSOLIDATE["day"] = today
+    try:
+        store = memlinks.EdgeStore(MEMORIES.db_path)
+        report = memlinks.consolidate(MEMORIES, store, now=now)
+    except Exception as exc:                      # noqa: BLE001
+        traceback.print_exc()
+        AGENCY.log("A0", None, f"整理失败：{exc}")
+        return None
+    AGENCY.log("A1", None, "每日记忆整理", {
+        "merged": len(report.get("merged") or []),
+        "archived": len(report.get("archived") or []),
+        "conflicts": len(report.get("conflicts") or []),
+        "heat_factor": report.get("heat_factor"),
+    })
+    return report
+
+
 def agency_tick(now, catch_up=False):
     """心跳：纯规则，不调模型。重活要进 TASKS，不许在这里等。
 
-    这一轮只做三件事：核对目标判据、算差值、把决策记进审计日志。
+    这一轮只做四件事：整理记忆、核对目标判据、算差值、把决策记进审计日志。
     真去说话或动手是下一阶段的事（mode 一开才有）。
     """
+    _maybe_consolidate(now)
     active = GOALS.active()
     if not active:
         return {"goals": 0, "gaps": 0}
