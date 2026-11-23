@@ -17,6 +17,15 @@
 **适合谁**：愿意花半小时配一次模型、在意数据不外流、受不了"客服腔"的人。  
 **不适合谁**：想要开箱即用的网页应用、想要多端同步、想要插件市场的人。
 
+*English: [README.en.md](README.en.md)*
+
+## 长什么样
+
+<img src="assets/architecture.svg" alt="local-companion architecture" width="900">
+
+左边是你，中间是编排，下面三列是记忆、能动性、外部世界，所有决定落在最底下那本
+append-only 账本里。图里没有云——因为真的没有。
+
 ## 你需要什么
 
 | | |
